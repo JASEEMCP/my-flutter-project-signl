@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:signl/core/size/size.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:signl/presentation/video_player_page/widgets/video_controller_widget.dart';
 import 'package:video_player/video_player.dart';
 
@@ -18,47 +19,64 @@ class _VideoPlayerScreen extends State<VideoPlayerScreen> {
   @override
   void initState() {
     super.initState();
-    _controller =
-        VideoPlayerController.network('https://www.fluttercampus.com/video.mp4')
-          ..addListener(() => setState(() {}))
-          ..setLooping(false)
-          ..initialize().then((value) => _controller.play());
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+    _controller = VideoPlayerController.network(
+        'https://static.videezy.com/system/resources/previews/000/053/947/original/4k-abstract-digital-text-minute-red-sample-fx-background-clip.mp4 ')
+      ..addListener(() => setState(() {}))
+      ..setLooping(false)
+      ..initialize().then((value) => _controller.play());
   }
 
   bool isMuted = true;
-
+  bool isVisible = true;
   @override
   Widget build(BuildContext context) {
-    Size size =MediaQuery.of(context).size;
+    bool orientation =
+        MediaQuery.of(context).orientation == Orientation.portrait;
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(width: 6)
-              ),
-              child: _controller.value.isInitialized
-                  ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    )
-                  : const CircularProgressIndicator(
-                      color: colorWhite,
-                    ),
-            ),
-
-
+            orientation
+                ? Center(
+                    child: videoPlayMenu(),
+                  )
+                : Expanded(child: videoPlayMenu()),
           ],
-
         ),
-
       ),
-      floatingActionButton: VideoControllerWidget(controller: _controller),
-      //backgroundColor: colorBlack,
+      floatingActionButton: Visibility(
+          visible: isVisible,
+          child: VideoControllerWidget(controller: _controller),
+      ),
+      backgroundColor: colorBlack,
+    );
+  }
+
+  GestureDetector videoPlayMenu() {
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          isVisible = !isVisible;
+        },
+        );
+      },
+      child: Container(
+        child: _controller.value.isInitialized
+            ? AspectRatio(
+                aspectRatio: _controller.value.aspectRatio,
+                child: VideoPlayer(_controller),
+              )
+            : const Center(
+                child: CircularProgressIndicator(
+                  color: colorWhite,
+                ),
+              ),
+      ),
     );
   }
 
